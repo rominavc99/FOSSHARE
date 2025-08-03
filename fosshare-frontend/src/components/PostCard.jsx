@@ -1,62 +1,91 @@
+import { useState } from "react";
 export default function PostCard({ post }) {
-  const isFossPost = post.tags && post.chart && post.value && post.change;
+  const isFossPost = post.tags && Array.isArray(post.tags);
+
+  const userName = post.user?.name || "Usuario desconocido";
+  const userPicture = post.user?.profile_picture || "https://i.pravatar.cc/40";
+  const postDate = new Date(post.created_at).toLocaleDateString();
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(post.likes_count || 0);
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const handleLike = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/posts/${post.id}/like/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+      });
+      const data = await res.json();
+      setLiked(data.liked);
+      setLikesCount((prev) => (data.liked ? prev + 1 : prev - 1));
+    } catch (error) {
+      console.error("Error al dar like:", error);
+    }
+  };
 
   if (isFossPost) {
-    // 📦 Diseño de post elaborado (FOSS)
     return (
       <div className="bg-gray-800 p-4 rounded-lg space-y-2">
-        <div className="flex items-center space-x-2">
-          <div className="bg-gray-900 p-4 rounded-lg text-center text-xs">
-            <p className="text-white font-bold">{post.chart}</p>
-            <p className="text-green-400">{post.value}</p>
-            <p className="text-green-400">{post.change}</p>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-white font-semibold text-lg">{post.title}</h3>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs bg-gray-700 text-white px-2 py-1 rounded-full"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-            <p className="text-sm text-gray-400 mt-2">
-              {post.author} • {post.timeAgo}
-            </p>
-            <div className="flex text-sm text-gray-400 mt-2 gap-4">
-              <span>{post.views} Views</span>
-              <span>{post.likes} Likes</span>
-              <span>{post.comments} comments</span>
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <img
+              src={userPicture}
+              alt="User"
+              className="w-8 h-8 rounded-full"
+            />
+            <div>
+              <p className="text-white text-sm font-semibold">{userName}</p>
+              <p className="text-xs text-gray-400">{postDate}</p>
             </div>
           </div>
-          <button className="text-gray-400 hover:text-white">❤</button>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleLike}
+              className="text-gray-400 hover:text-red-500 text-lg"
+            >
+              {liked ? "❤️" : "🤍"} {likesCount}
+            </button>
+
+            {post.chart && (
+              <div className="bg-gray-900 p-2 rounded text-center text-xs">
+                <p className="text-white font-bold">{post.chart}</p>
+                <p className="text-green-400">{post.value}</p>
+                <p className="text-green-400">{post.change}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <h3 className="text-white font-semibold text-lg">{post.title}</h3>
+        <p className="text-gray-300 text-sm mt-2">{post.content}</p>
+        <div className="flex flex-wrap gap-1 mt-1">
+          {Array.isArray(post.tags) &&
+            post.tags.map((tag, index) => (
+              <span
+                key={tag.id || tag.name || tag || index}
+                className="text-xs bg-gray-700 text-white px-2 py-1 rounded-full"
+              >
+                #{tag.name || tag}
+              </span>
+            ))}
         </div>
       </div>
     );
   }
 
-  // 🧠 Diseño de post secundario (simple)
   return (
     <div className="bg-gray-800 p-4 rounded-lg space-y-3">
       <div className="flex items-center gap-2">
-        <img
-          src={post.user?.profile_picture || "https://i.pravatar.cc/40"}
-          alt="User"
-          className="w-8 h-8 rounded-full"
-        />
+        <img src={userPicture} alt="User" className="w-8 h-8 rounded-full" />
         <div>
-          <p className="text-white font-medium text-sm">
-            {post.user?.name || "Anonymous"}
-          </p>
-          <p className="text-xs text-gray-400">
-            {new Date(post.created_at).toLocaleDateString()}
-          </p>
+          <p className="text-white font-medium text-sm">{userName}</p>
+          <p className="text-xs text-gray-400">{postDate}</p>
         </div>
       </div>
-    
+
+      <h3 className="text-white font-semibold">{post.title}</h3>
       <p className="text-gray-300 text-sm">{post.content}</p>
     </div>
   );

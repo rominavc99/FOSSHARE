@@ -46,7 +46,7 @@ export default function FossPostModal({ showModal, setShowModal }) {
     const postData = {
       title,
       content,
-      tags: selectedTags.map((tag) => tag.value), // lista de IDs
+      tag_ids: selectedTags.map((tag) => tag.value), // lista de IDs
     };
 
     try {
