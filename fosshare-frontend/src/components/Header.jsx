@@ -1,8 +1,46 @@
 import { Home, Bell, Search, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect,useRef, useState } from "react";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const dropdownRef = useRef(null);
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log("Header component montado");
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  
+  useEffect(() => {
+    console.log("Intentando llamar a:", `${apiUrl}/api/user/profile/`);
+    console.log("Token:", localStorage.getItem("authToken"));
+    
+    fetch(`${apiUrl}/api/user/profile/`, {
+      headers: {
+        Authorization: `Token ${localStorage.getItem("authToken")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("User data:", data);
+        setUserData(data);
+      })
+      .catch((err) => {
+        console.error("Error al obtener el perfil del usuario:", err);
+      });
+    
+  }, []);
 
   return (
     <header className="bg-[#1B1D27] text-white px-4 md:px-6 py-4 flex items-center justify-between border-b border-gray-700">
@@ -35,16 +73,40 @@ export default function Header() {
       <div className="hidden md:flex items-center gap-4">
         <NavButton icon={<Home size={20} />} />
         <NavButton icon={<Bell size={20} />} />
-        <div className="flex items-center gap-2">
-          <img
-            src="https://i.pravatar.cc/40"
-            alt="User avatar"
-            className="w-8 h-8 rounded-full"
-          />
-          <span className="hidden sm:inline text-sm font-medium">
-            John Doe ▾
-          </span>
-        </div>
+
+        {userData ? (
+          <div className="relative" ref={dropdownRef}>
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <img
+                src={userData.profile_picture}
+                alt="User avatar"
+                className="w-8 h-8 rounded-full"
+              />
+              <span className="hidden sm:inline text-sm font-medium">
+                {userData.full_name} ▾
+              </span>
+            </div>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-40 bg-white text-black rounded shadow-lg z-50">
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("authToken");
+                    window.location.href = "/";
+                  }}
+                  className="block w-full text-white text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-gray-600 animate-pulse"></div>
+        )}
       </div>
 
       {/* Mobile menu */}

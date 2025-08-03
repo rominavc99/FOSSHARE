@@ -33,6 +33,7 @@ export default function Login() {
 
         const data = await response.json();
         console.log("Autenticado con éxito:", data);
+        localStorage.setItem("authToken", data.key); 
         navigate("/home");
       } catch (error) {
         console.error("Network error:", error);

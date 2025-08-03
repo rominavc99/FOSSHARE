@@ -62,8 +62,10 @@ INSTALLED_APPS = [
     'core',
 ]
 
-SITE_ID = 2
+SITE_ID = 3
 AUTH_USER_MODEL = 'core.User'
+SOCIALACCOUNT_ADAPTER = 'core.adapters.CustomSocialAccountAdapter'
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
