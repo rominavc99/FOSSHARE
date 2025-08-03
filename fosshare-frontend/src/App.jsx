@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import PostDetailPage from "./pages/PostDetail";
+
 
 export default function App() {
   return (
@@ -9,6 +11,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/posts/:id" element={<PostDetailPage />} />
         </Routes>
       </div>
     </Router>

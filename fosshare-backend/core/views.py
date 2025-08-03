@@ -11,6 +11,7 @@ from rest_framework import status
 from .serializers import PostSerializer, TagSerializer, PostSecondarySerializer, PostSecondary, CommentSerializer, RatingSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 
 
 class GoogleLogin(SocialLoginView):
@@ -126,3 +127,16 @@ def add_comment(request, post_id):
         comment = Comment.objects.create(post=post, user=request.user, content=content)
         return Response(CommentSerializer(comment).data, status=201)
     return Response({'error': 'Content is required'}, status=400)
+
+@api_view(['GET'])
+def top_tags(request):
+    tags = Tag.objects.annotate(post_count=Count('posts')).order_by('-post_count')[:6]
+    data = [{"name": tag.name, "count": tag.post_count} for tag in tags]
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    serializer = PostSerializer(post, context={"request": request})
+    return Response(serializer.data)

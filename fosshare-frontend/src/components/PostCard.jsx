@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 export default function PostCard({ post }) {
   const isFossPost = post.tags && Array.isArray(post.tags);
 
@@ -8,6 +9,7 @@ export default function PostCard({ post }) {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const apiUrl = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
   const handleLike = async () => {
     try {
       const res = await fetch(`${apiUrl}/api/posts/${post.id}/like/`, {
@@ -58,7 +60,12 @@ export default function PostCard({ post }) {
           </div>
         </div>
 
-        <h3 className="text-white font-semibold text-lg">{post.title}</h3>
+        <h3
+          className="text-white font-semibold text-lg cursor-pointer"
+          onClick={() => navigate(`/posts/${post.id}`)}
+        >
+          {post.title}
+        </h3>
         <p className="text-gray-300 text-sm mt-2">{post.content}</p>
         <div className="flex flex-wrap gap-1 mt-1">
           {Array.isArray(post.tags) &&
@@ -85,7 +92,12 @@ export default function PostCard({ post }) {
         </div>
       </div>
 
-      <h3 className="text-white font-semibold">{post.title}</h3>
+      <h3
+        className="text-white font-semibold"
+        
+      >
+        {post.title}
+      </h3>
       <p className="text-gray-300 text-sm">{post.content}</p>
     </div>
   );

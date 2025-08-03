@@ -1,7 +1,7 @@
 
 from django.contrib import admin
 from django.urls import path, include
-from core.views import GoogleLogin, get_user_profile,create_post_secondary, create_post, list_tags, PostSecondaryListView, PostListView, like_post, rate_post, add_comment
+from core.views import GoogleLogin, get_user_profile,create_post_secondary, create_post, list_tags, PostSecondaryListView, PostListView, like_post, rate_post, add_comment, top_tags, post_detail
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -18,4 +18,6 @@ urlpatterns = [
     path('api/posts/<int:post_id>/like/', like_post, name='like_post'),
     path('api/posts/<int:post_id>/rate/', rate_post, name='rate_post'),
     path('api/posts/<int:post_id>/comment/', add_comment, name='add_comment'),
+    path("api/tags/top/", top_tags, name="top-tags"),
+    path('api/posts/<int:post_id>/', post_detail, name='post-detail'),
 ]

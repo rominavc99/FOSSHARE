@@ -1,6 +1,18 @@
 import { Star, Clock, Users, Hash, Bookmark } from "lucide-react";
+import { useEffect, useState } from "react";
+
 
 export default function SidebarLeft() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const [popularTags, setPopularTags] = useState([]);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/tags/top/`)
+      .then((res) => res.json())
+      .then((data) => setPopularTags(data))
+      .catch((err) => console.error("Error al cargar tags populares", err));
+  }, []);
+  
   return (
     <aside className="w-full space-y-6 text-sm text-white">
       {/* Secciones principales */}
@@ -24,21 +36,12 @@ export default function SidebarLeft() {
         />
       </div>
 
-      {/* Tags populares */}
+      {/* Tags populares dinámicos */}
       <div className="space-y-2">
         <h3 className="text-gray-400 uppercase text-xs font-semibold">
           Popular Tags
         </h3>
-        <TagList
-          tags={[
-            { name: "#javascript", count: "82,645" },
-            { name: "#finance", count: "65,523" },
-            { name: "#design", count: "51,354" },
-            { name: "#innovation", count: "48,029" },
-            { name: "#tutorial", count: "51,354" },
-            { name: "#business", count: "82,645" },
-          ]}
-        />
+        <TagList tags={popularTags} />
       </div>
 
       {/* Grupos destacados */}
