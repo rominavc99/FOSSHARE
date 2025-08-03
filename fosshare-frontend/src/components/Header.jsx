@@ -1,14 +1,79 @@
-import { Home, Bell, Search, Menu, X } from "lucide-react";
+import { Home, Bell, Search, Menu, X, Plus } from "lucide-react";
 import { useEffect,useRef, useState } from "react";
+import Select from "react-select";
+import CreateFossPostModal from "./CreateFossPostModal";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const dropdownRef = useRef(null);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [tags, setTags] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
-  console.log("Header component montado");
-  
+
+  // Cargar tags desde el backend
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    fetch(`${apiUrl}/api/tags/`, {
+      headers: {
+        Authorization: `Token ${localStorage.getItem("authToken")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setTags(data))
+      .catch((err) => console.error("Error al cargar tags:", err));
+  }, []);
+
+  // Manejar selección de tags
+  const toggleTag = (tagId) => {
+    if (selectedTags.includes(tagId)) {
+      setSelectedTags(selectedTags.filter((id) => id !== tagId));
+    } else {
+      setSelectedTags([...selectedTags, tagId]);
+    }
+  };
+
+  // Enviar el post
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    const payload = {
+      title,
+      content,
+      tags: selectedTags,
+    };
+
+    try {
+      const response = await fetch(`${apiUrl}/api/posts/create/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Post creado:", data);
+        setShowModal(false);
+        setTitle("");
+        setContent("");
+        setSelectedTags([]);
+        // Puedes recargar el feed aquí si lo necesitas
+      } else {
+        const errorData = await response.json();
+        console.error("Error al crear post:", errorData);
+      }
+    } catch (err) {
+      console.error("Error en la solicitud:", err);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -21,11 +86,8 @@ export default function Header() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
+
   useEffect(() => {
-    console.log("Intentando llamar a:", `${apiUrl}/api/user/profile/`);
-    console.log("Token:", localStorage.getItem("authToken"));
-    
     fetch(`${apiUrl}/api/user/profile/`, {
       headers: {
         Authorization: `Token ${localStorage.getItem("authToken")}`,
@@ -39,7 +101,6 @@ export default function Header() {
       .catch((err) => {
         console.error("Error al obtener el perfil del usuario:", err);
       });
-    
   }, []);
 
   return (
@@ -71,7 +132,10 @@ export default function Header() {
 
       {/* Desktop nav + user */}
       <div className="hidden md:flex items-center gap-4">
-        <NavButton icon={<Home size={20} />} />
+        <NavButton
+          icon={<Plus size={20} />}
+          onClick={() => setShowModal(true)}
+        />
         <NavButton icon={<Bell size={20} />} />
 
         {userData ? (
@@ -91,15 +155,18 @@ export default function Header() {
             </div>
 
             {dropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-40 bg-white text-black rounded shadow-lg z-50">
+              <div className="absolute right-0 top-full mt-2 w-40 bg-black text-black rounded shadow-lg z-50">
+                <button className="block w-full text-white text-left px-4 py-2 hover:bg-gray-700 focus:outline-none focus:ring-0 border-none">
+                  My posts
+                </button>
                 <button
                   onClick={() => {
                     localStorage.removeItem("authToken");
                     window.location.href = "/";
                   }}
-                  className="block w-full text-white text-left px-4 py-2 hover:bg-gray-100"
+                  className="block w-full text-white text-left px-4 py-2 hover:bg-gray-700 focus:outline-none focus:ring-0 border-none"
                 >
-                  Cerrar sesión
+                  Logout
                 </button>
               </div>
             )}
@@ -141,12 +208,19 @@ export default function Header() {
           </div>
         </div>
       )}
+      <CreateFossPostModal showModal={showModal} setShowModal={setShowModal} />
     </header>
   );
 }
 
-function NavButton({ icon }) {
+function NavButton({ icon, onClick }) {
   return (
-    <button className="hover:text-orange-400 transition-colors">{icon}</button>
+    <button
+      onClick={onClick}
+      className="hover:text-orange-400 transition-colors"
+    >
+      {icon}
+    </button>
   );
 }
+
