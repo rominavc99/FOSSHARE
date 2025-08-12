@@ -25,7 +25,7 @@ env = environ.Env(
 # Lee el archivo .env
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-
+GOOGLE_CALLBACK_URL = env("GOOGLE_CALLBACK_URL", default="http://localhost:3000")
 
 
 # Quick-start development settings - unsuitable for production

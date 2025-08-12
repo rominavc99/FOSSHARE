@@ -12,12 +12,13 @@ from .serializers import PostSerializer, TagSerializer, PostSecondarySerializer,
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from django.conf import settings
 
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = "http://localhost:3000"
+    callback_url = settings.GOOGLE_CALLBACK_URL
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
