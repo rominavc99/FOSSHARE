@@ -124,7 +124,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'sslmode': 'require'
         },
     },
 ]
@@ -143,7 +142,9 @@ DATABASES = {
         'PASSWORD': env('DB_PASS'),
         'HOST': env('DB_HOST'), 
         'PORT': env('DB_PORT'),
+        
     }
+    
 }
 
 
